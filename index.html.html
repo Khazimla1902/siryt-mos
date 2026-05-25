@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiRyt Mos? — Student Wellness Check-In</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --brand: #1D6B4E;
+    --brand-dark: #155a40;
+    --brand-light: #E1F5EE;
+    --brand-mid: #5DCAA5;
+    --accent: #D85A30;
+    --soft: #F5F3EF;
+    --white: #ffffff;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --danger-bg: #fef2f2;
+    --danger-border: #fecaca;
+    --danger-text: #991b1b;
+    --warn-bg: #fff7ed;
+    --warn-border: #fed7aa;
+    --warn-text: #92400e;
+    --radius: 16px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--soft);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px 16px 48px;
+  }
+
+  .phone {
+    width: 375px;
+    min-height: 667px;
+    background: var(--soft);
+    border-radius: 32px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* SCREENS */
+  .screen { display: none; flex-direction: column; min-height: 667px; animation: fadeIn 0.3s ease; }
+  .screen.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* HEADER */
+  .header {
+    background: var(--white);
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .header-left { flex: 1; }
+  .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; color: var(--brand); line-height: 1; }
+  .tagline { font-size: 11px; color: var(--muted); font-weight: 300; margin-top: 2px; }
+  .anon-badge {
+    background: var(--brand-light);
+    color: var(--brand);
+    font-size: 10px;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  /* PROGRESS */
+  .progress-wrap { flex-shrink: 0; }
+  .progress-bar { height: 4px; background: var(--border); }
+  .progress-fill { height: 100%; background: var(--brand-mid); transition: width 0.5s ease; }
+  .step-label { font-size: 11px; color: var(--muted); padding: 7px 20px; }
+
+  /* SCROLLABLE CONTENT */
+  .content { flex: 1; padding: 16px 20px; overflow-y: auto; }
+
+  /* CARDS */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+  }
+  .question { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 14px; line-height: 1.5; }
+
+  /* NOTICE BOXES */
+  .notice-warn {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: var(--warn-text);
+    line-height: 1.6;
+  }
+  .notice-danger {
+    background: var(--danger-bg);
+    border: 1px solid var(--danger-border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: var(--danger-text);
+    line-height: 1.6;
+  }
+  .notice-green {
+    background: var(--brand-light);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: var(--brand);
+    line-height: 1.6;
+  }
+
+  /* EMOJI MOOD GRID */
+  .emoji-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 4px; }
+  .emoji-btn {
+    background: var(--white);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 8px 4px 6px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    transition: all 0.18s;
+  }
+  .emoji-btn:hover { border-color: var(--brand-mid); background: var(--brand-light); }
+  .emoji-btn.selected { border-color: var(--brand); background: var(--brand-light); }
+  .emoji-btn .em { font-size: 22px; line-height: 1; }
+  .emoji-btn .em-label { font-size: 9px; color: var(--muted); font-family: 'DM Sans', sans-serif; }
+  .emoji-btn.selected .em-label { color: var(--brand); }
+
+  /* OPTION BUTTONS */
+  .option-btn {
+    width: 100%;
+    text-align: left;
+    padding: 12px 14px;
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 8px;
+    transition: all 0.18s;
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.4;
+  }
+  .option-btn:hover { border-color: var(--brand-mid); background: var(--brand-light); }
+  .option-btn.selected { border-color: var(--brand); background: var(--brand-light); color: var(--brand); font-weight: 500; }
+  .option-btn:last-child { margin-bottom: 0; }
+
+  /* PRIMARY BUTTON */
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: var(--brand);
+    color: var(--white);
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+    margin-top: 4px;
+  }
+  .btn-primary:hover { background: var(--brand-dark); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; transform: none; }
+
+  /* SECONDARY BUTTON */
+  .btn-secondary {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    color: var(--brand);
+    border: 1.5px solid var(--brand);
+    border-radius: 12px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    margin-top: 8px;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { background: var(--brand-light); }
+
+  /* DANGER BUTTON */
+  .btn-danger {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    color: #dc2626;
+    border: 1.5px solid #dc2626;
+    border-radius: 12px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    margin-top: 8px;
+    transition: all 0.2s;
+  }
+  .btn-danger:hover { background: #fef2f2; }
+
+  .btn-link {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    margin-top: 10px;
+    display: block;
+    text-align: center;
+    width: 100%;
+    padding: 4px;
+  }
+
+  /* ALERT TEXT */
+  .alert-text { font-size: 12px; color: var(--accent); text-align: center; margin-top: 6px; display: none; }
+
+  /* ONBOARDING */
+  .onboard-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 20px; }
+  .brand-hero { text-align: center; margin-bottom: 28px; }
+  .brand-hero .big-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 36px; color: var(--brand); }
+  .brand-hero .big-tag { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .step-cards { width: 100%; margin-bottom: 20px; }
+  .step-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: var(--white);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+  }
+  .step-card .s-icon { font-size: 28px; flex-shrink: 0; margin-top: 2px; }
+  .step-card h3 { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 3px; font-family: 'Syne', sans-serif; }
+  .step-card p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* RESULTS — AFFIRMATION */
+  .affirmation {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 24px 20px;
+    text-align: center;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+  }
+  .affirmation .wave { font-size: 48px; display: block; margin-bottom: 12px; animation: wave 2s ease-in-out infinite; }
+  @keyframes wave { 0%,100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+  .affirmation h2 { font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 700; color: var(--brand); margin-bottom: 8px; line-height: 1.3; }
+  .affirmation p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* SCORE BAR */
+  .score-bar-wrap { margin: 10px 0; }
+  .score-bar-bg { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .score-bar-fill { height: 100%; background: var(--brand-mid); border-radius: 4px; transition: width 1s ease; }
+
+  /* TIP CARDS */
+  .tip-card {
+    background: var(--brand-light);
+    border-left: 4px solid var(--brand-mid);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .tip-card h4 { font-size: 12px; font-weight: 500; color: var(--brand); margin-bottom: 4px; }
+  .tip-card p { font-size: 13px; color: #374151; line-height: 1.5; }
+
+  /* RESOURCE CARDS */
+  .resource-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .resource-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    background: var(--brand-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .resource-info h4 { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  .resource-info p { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+  .resource-info a { font-size: 12px; color: var(--brand); font-weight: 500; cursor: pointer; text-decoration: none; }
+  .resource-info a:hover { text-decoration: underline; }
+
+  /* MOOD GRAPH */
+  .graph-card { background: var(--white); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 12px; border: 1px solid var(--border); }
+  .graph-card h4 { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 14px; }
+  .graph-bars { display: flex; align-items: flex-end; gap: 10px; height: 90px; }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; height: 100%; justify-content: flex-end; }
+  .bar { width: 100%; background: var(--brand-mid); border-radius: 4px 4px 0 0; min-height: 6px; transition: height 0.6s ease; }
+  .bar.today { background: var(--brand); }
+  .bar-lbl { font-size: 9px; color: var(--muted); }
+  .graph-trend { font-size: 11px; color: var(--muted); margin-top: 10px; }
+  .graph-trend span { color: var(--brand); font-weight: 500; }
+
+  /* HISTORY LIST */
+  .history-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 13px; }
+  .history-row:last-child { border-bottom: none; }
+  .history-row .date { color: var(--muted); }
+  .history-row .mood-val { font-weight: 500; color: var(--text); }
+
+  /* BOTTOM NAV */
+  .nav-bar {
+    background: var(--white);
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-shrink: 0;
+  }
+  .nav-tab {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 10px 0; gap: 3px;
+    background: none; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px; color: var(--muted);
+    transition: color 0.2s;
+  }
+  .nav-tab .nav-icon { font-size: 20px; line-height: 1; }
+  .nav-tab.active { color: var(--brand); }
+  .nav-tab:hover { color: var(--brand); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5); z-index: 200;
+    align-items: center; justify-content: center; padding: 24px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box {
+    background: var(--white); border-radius: var(--radius);
+    padding: 24px; width: 100%; max-width: 327px;
+  }
+  .modal-box h3 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .modal-box p { font-size: 14px; color: var(--muted); margin-bottom: 18px; line-height: 1.5; }
+  .modal-btns { display: flex; gap: 10px; }
+  .modal-btns button { flex: 1; padding: 11px; border-radius: 10px; border: 1.5px solid var(--border); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--white); transition: all 0.18s; }
+  .modal-btns button:hover { background: var(--soft); }
+  .modal-btns .m-danger { background: var(--accent); color: var(--white); border-color: var(--accent); }
+  .modal-btns .m-danger:hover { background: #c04a22; }
+
+  /* SECTION LABEL */
+  .section-label { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
+
+  /* CONSENT BAR */
+  .consent-bar {
+    background: #f9fafb; border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 14px;
+    font-size: 11px; color: var(--muted); line-height: 1.5;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<!-- MODAL: Clear History Confirm -->
+<div class="modal-overlay" id="modal-clear">
+  <div class="modal-box">
+    <h3>Clear mood history?</h3>
+    <p>This will permanently delete all your past check-in data. This cannot be undone.</p>
+    <div class="modal-btns">
+      <button onclick="closeModal('modal-clear')">Cancel</button>
+      <button class="m-danger" onclick="clearHistory()">Clear all</button>
+    </div>
+  </div>
+</div>
+
+<div class="phone">
+
+  <!-- ═══════════════════════════════════════
+       SCREEN 1: ONBOARDING
+  ═══════════════════════════════════════ -->
+  <div class="screen active" id="screen-onboard">
+    <div style="background:var(--white);padding:20px;text-align:center;border-bottom:1px solid var(--border)">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:30px;color:var(--brand)">SiRyt Mos?</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:3px">Is it alright though?</div>
+    </div>
+    <div class="onboard-body">
+      <div class="step-cards" style="width:100%">
+        <div class="step-card">
+          <div class="s-icon">🧠</div>
+          <div>
+            <h3>Check in</h3>
+            <p>Answer a few quick questions about how you're feeling today. Takes less than 5 minutes.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="s-icon">💡</div>
+          <div>
+            <h3>Get tips</h3>
+            <p>Receive personalised coping suggestions based on evidence-based wellness frameworks.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="s-icon">🤝</div>
+          <div>
+            <h3>Find support</h3>
+            <p>Connect with campus wellness resources that are right for your situation.</p>
+          </div>
+        </div>
+      </div>
+      <div class="notice-green" style="width:100%;margin-bottom:16px">
+        🔒 <strong>Anonymous – No Account Required.</strong> Nothing is linked to your identity.
+      </div>
+      <button class="btn-primary" onclick="goTo('screen-mood')">Start check-in</button>
+      <button class="btn-link" onclick="goTo('screen-mood')">Skip intro</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SCREEN 2: STEP 1 — MOOD
+  ═══════════════════════════════════════ -->
+  <div class="screen" id="screen-mood">
+    <div class="header">
+      <div class="header-left">
+        <div class="logo">SiRyt Mos?</div>
+        <div class="tagline">Anonymous · Confidential</div>
+      </div>
+      <div class="anon-badge">🔒 Anonymous</div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" style="width:25%"></div></div>
+      <div class="step-label">Step 1 of 4 — Mood check</div>
+    </div>
+    <div class="content">
+      <div class="notice-warn">🛡️ Your responses are not stored with any personal identifiers. You remain fully anonymous.</div>
+      <div class="card">
+        <div class="question">How are you feeling right now?</div>
+        <div class="emoji-grid">
+          <button class="emoji-btn" onclick="selectMood(this,1)"><span class="em">😫</span><span class="em-label">Terrible</span></button>
+          <button class="emoji-btn" onclick="selectMood(this,2)"><span class="em">😕</span><span class="em-label">Low</span></button>
+          <button class="emoji-btn" onclick="selectMood(this,3)"><span class="em">😐</span><span class="em-label">Okay</span></button>
+          <button class="emoji-btn" onclick="selectMood(this,4)"><span class="em">🙂</span><span class="em-label">Good</span></button>
+          <button class="emoji-btn" onclick="selectMood(this,5)"><span class="em">😄</span><span class="em-label">Great</span></button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="question">What's weighing on you most today?</div>
+        <button class="option-btn" onclick="selectOpt(this,'concern')">📚 Academic stress or deadlines</button>
+        <button class="option-btn" onclick="selectOpt(this,'concern')">💬 Social or relationship pressures</button>
+        <button class="option-btn" onclick="selectOpt(this,'concern')">💸 Financial worries</button>
+        <button class="option-btn" onclick="selectOpt(this,'concern')">😴 Sleep or fatigue</button>
+        <button class="option-btn" onclick="selectOpt(this,'concern')">✨ Nothing specific, just checking in</button>
+      </div>
+      <button class="btn-primary" id="mood-next" disabled onclick="goTo('screen-sleep')">Continue →</button>
+      <div class="alert-text" id="mood-alert">⚠️ Please select your mood and a concern before continuing</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SCREEN 3: STEP 2 — LIFESTYLE
+  ═══════════════════════════════════════ -->
+  <div class="screen" id="screen-sleep">
+    <div class="header">
+      <div class="header-left">
+        <div class="logo">SiRyt Mos?</div>
+        <div class="tagline">Anonymous · Confidential</div>
+      </div>
+      <div class="anon-badge">🔒 Anonymous</div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" style="width:50%"></div></div>
+      <div class="step-label">Step 2 of 4 — Lifestyle check</div>
+    </div>
+    <div class="content">
+      <div class="card">
+        <div class="question">How many hours of sleep did you get last night?</div>
+        <button class="option-btn" onclick="selectOpt(this,'sleep')">😵 Less than 4 hours</button>
+        <button class="option-btn" onclick="selectOpt(this,'sleep')">😴 4–6 hours</button>
+        <button class="option-btn" onclick="selectOpt(this,'sleep')">😌 6–8 hours</button>
+        <button class="option-btn" onclick="selectOpt(this,'sleep')">🌟 More than 8 hours</button>
+      </div>
+      <div class="card">
+        <div class="question">Have you eaten or hydrated well today?</div>
+        <button class="option-btn" onclick="selectOpt(this,'eat')">✅ Yes, I've eaten and had water</button>
+        <button class="option-btn" onclick="selectOpt(this,'eat')">⚡ Partially — could do better</button>
+        <button class="option-btn" onclick="selectOpt(this,'eat')">❌ Not really — skipped meals</button>
+      </div>
+      <button class="btn-primary" id="sleep-next" disabled onclick="goTo('screen-support')">Continue →</button>
+      <button class="btn-link" onclick="goTo('screen-mood')">← Back</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SCREEN 4: STEP 3 — SUPPORT
+  ═══════════════════════════════════════ -->
+  <div class="screen" id="screen-support">
+    <div class="header">
+      <div class="header-left">
+        <div class="logo">SiRyt Mos?</div>
+        <div class="tagline">Anonymous · Confidential</div>
+      </div>
+      <div class="anon-badge">🔒 Anonymous</div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" style="width:75%"></div></div>
+      <div class="step-label">Step 3 of 4 — Support preference</div>
+    </div>
+    <div class="content">
+      <div class="card">
+        <div class="question">What kind of support sounds most helpful right now?</div>
+        <button class="option-btn" onclick="selectOpt(this,'support')">💭 Coping tips I can try on my own</button>
+        <button class="option-btn" onclick="selectOpt(this,'support')">🧑‍⚕️ Someone to talk to (counselling)</button>
+        <button class="option-btn" onclick="selectOpt(this,'support')">👥 Peer support group</button>
+        <button class="option-btn" onclick="selectOpt(this,'support')">🆘 I need urgent help right now</button>
+        <button class="option-btn" onclick="selectOpt(this,'support')">📋 Just browse resources</button>
+      </div>
+      <div class="notice-danger">🚨 <strong>In crisis?</strong> If you are in immediate danger, please call <strong>0800 567 567</strong> (SADAG 24hr) or go to your nearest campus health centre.</div>
+      <button class="btn-primary" id="support-next" disabled onclick="submitCheckin()">Submit check-in ✓</button>
+      <div class="consent-bar">🔒 By submitting, you confirm this check-in is saved anonymously with no personal identifiers.</div>
+      <button class="btn-link" onclick="goTo('screen-sleep')">← Back</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SCREEN 5: RESULTS
+  ═══════════════════════════════════════ -->
+  <div class="screen" id="screen-results">
+    <div class="header">
+      <div class="header-left">
+        <div class="logo">SiRyt Mos?</div>
+        <div class="tagline">Your check-in is complete</div>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+      <div class="step-label" style="color:var(--brand)">✓ Check-in complete</div>
+    </div>
+    <div class="content">
+      <div class="affirmation">
+        <span class="wave" id="result-wave">🌊</span>
+        <h2 id="result-title">You showed up for yourself today.</h2>
+        <p id="result-msg">That matters. Checking in is the first step to feeling better.</p>
+      </div>
+      <div class="section-label">Your wellbeing snapshot</div>
+      <div class="card">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Mood today</div>
+        <div class="score-bar-wrap">
+          <div class="score-bar-bg"><div class="score-bar-fill" id="mood-bar" style="width:0%"></div></div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-top:12px;margin-bottom:8px">Suggested tips based on your responses</div>
+        <div id="tips-container"></div>
+      </div>
+      <button class="btn-primary" onclick="goTo('screen-resources')">Find campus support →</button>
+      <button class="btn-secondary" onclick="goTo('screen-history')">View my mood history</button>
+    </div>
+    <div class="nav-bar">
+      <button class="nav-tab active" onclick="goTo('screen-results')"><span class="nav-icon">🏠</span>Home</button>
+      <button class="nav-tab" onclick="goTo('screen-resources')"><span class="nav-icon">🏥</span>Resources</button>
+      <button class="nav-tab" onclick="goTo('screen-history')"><span class="nav-icon">📈</span>History</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SCREEN 6: RESOURCES
+  ═══════════════════════════════════════ -->
+  <div class="screen" id="screen-resources">
+    <div class="header">
+      <div class="header-left">
+        <div class="logo">SiRyt Mos?</div>
+        <div class="tagline">Campus support near you</div>
+      </div>
+    </div>
+    <div class="content">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:14px">All resources are verified and currently available:</div>
+      <div class="resource-card">
+        <div class="resource-icon">🧑‍⚕️</div>
+        <div class="resource-info">
+          <h4>Campus Counselling Centre</h4>
+          <p>Free confidential sessions · Mon–Fri 8am–4pm</p>
+          <a href="#">Book a session →</a>
+        </div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">📞</div>
+        <div class="resource-info">
+          <h4>SADAG 24hr Crisis Line</h4>
+          <p>Free · Available any time · Trained counsellors</p>
+          <a href="tel:0800567567">Call 0800 567 567 →</a>
+        </div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">👥</div>
+        <div class="resource-info">
+          <h4>Student Peer Support Group</h4>
+          <p>Weekly · Wed 5pm · Student Union Rm 202</p>
+          <a href="#">Add to calendar →</a>
+        </div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">🏥</div>
+        <div class="resource-info">
+          <h4>Campus Health Clinic</h4>
+          <p>Walk-ins welcome · Mon–Fri 7:30am–5pm</p>
+          <a href="#">Get directions →</a>
+        </div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">📱</div>
+        <div class="resource-info">
+          <h4>Headspace (free for students)</h4>
+          <p>Guided mindfulness and sleep resources</p>
+          <a href="#">Access free account →</a>
+        </div>
+      </div>
+      <button class="btn-secondary" onclick="goTo('screen-mood')">Start another check-in</button>
+    </div>
+    <div class="nav-bar">
+      <button class="nav-tab" onclick="goTo('screen-results')"><span class="nav-icon">🏠</span>Home</button>
+      <button class="nav-tab active" onclick="goTo('screen-resources')"><span class="nav-icon">🏥</span>Resources</button>
+      <button class="nav-tab" onclick="goTo('screen-history')"><span class="nav-icon">📈</span>History</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SCREEN 7: MOOD HISTORY
+  ═══════════════════════════════════════ -->
+  <div class="screen" id="screen-history">
+    <div class="header">
+      <div class="header-left">
+        <div class="logo">SiRyt Mos?</div>
+        <div class="tagline">Your mood over time</div>
+      </div>
+    </div>
+    <div class="content">
+      <div class="graph-card">
+        <h4>This week's mood trend</h4>
+        <div class="graph-bars">
+          <div class="bar-col"><div class="bar" style="height:30%"></div><div class="bar-lbl">Mon</div></div>
+          <div class="bar-col"><div class="bar" style="height:50%"></div><div class="bar-lbl">Tue</div></div>
+          <div class="bar-col"><div class="bar" style="height:40%"></div><div class="bar-lbl">Wed</div></div>
+          <div class="bar-col"><div class="bar" style="height:70%"></div><div class="bar-lbl">Thu</div></div>
+          <div class="bar-col"><div class="bar today" id="today-bar" style="height:60%"></div><div class="bar-lbl">Today</div></div>
+        </div>
+        <div class="graph-trend">Trend: <span>↑ Improving this week</span></div>
+      </div>
+      <div class="card">
+        <div class="section-label">Recent check-ins</div>
+        <div class="history-row"><span class="date">Today</span><span class="mood-val" id="today-entry">😐 Okay</span></div>
+        <div class="history-row"><span class="date">Yesterday</span><span class="mood-val">🙂 Good</span></div>
+        <div class="history-row"><span class="date">2 days ago</span><span class="mood-val">😕 Low</span></div>
+        <div class="history-row"><span class="date">3 days ago</span><span class="mood-val">😫 Terrible</span></div>
+      </div>
+      <button class="btn-danger" onclick="document.getElementById('modal-clear').classList.add('show')">🗑️ Clear mood history</button>
+    </div>
+    <div class="nav-bar">
+      <button class="nav-tab" onclick="goTo('screen-results')"><span class="nav-icon">🏠</span>Home</button>
+      <button class="nav-tab" onclick="goTo('screen-resources')"><span class="nav-icon">🏥</span>Resources</button>
+      <button class="nav-tab active" onclick="goTo('screen-history')"><span class="nav-icon">📈</span>History</button>
+    </div>
+  </div>
+
+</div><!-- end .phone -->
+
+<script>
+  const state = { mood: 0, concern: false, sleep: false, eat: false, support: false };
+
+  const moodData = {
+    1: { wave:'😫', title:'You showed up. That takes strength.', msg:'Reaching out when things feel hard is incredibly brave. Let\'s find you some support.', score:'20%', tips:['Try the 4-7-8 breathing technique right now — breathe in 4 sec, hold 7 sec, out 8 sec.','Reach out to one person you trust today, even just a message.','Consider visiting the campus counselling centre — they are there for exactly this.'] },
+    2: { wave:'🌧️', title:'Reaching out is always the right call.', msg:'It\'s okay to not be okay. Here are some things that may help.', score:'40%', tips:['Go for a 10-minute walk outside — it can lift your mood quickly.','Write down three small things you can control today.','Chat with a friend or classmate, even briefly.'] },
+    3: { wave:'☁️', title:'You took a moment for yourself. Good.', msg:'Staying aware of your wellbeing keeps you ahead of burnout.', score:'60%', tips:['Maintain your routine — consistency is powerful for mental wellness.','Try a 5-minute mindfulness exercise or body scan.','Celebrate the small wins in your day.'] },
+    4: { wave:'🌤️', title:'You\'re doing well — keep it up!', msg:'Positive check-ins are just as important as difficult ones.', score:'80%', tips:['Keep doing what you\'re doing — you\'ve found something that works!','Help a fellow student — supporting others boosts your own mood too.','Log your positive moments in a journal to remember them later.'] },
+    5: { wave:'☀️', title:'What a great check-in! You\'re thriving.', msg:'Your positive energy matters — for you and everyone around you.', score:'100%', tips:['Incredible! Share your energy with those around you today.','Reflect on what is working and keep those habits up.','This is a great day to tackle something you have been putting off.'] }
+  };
+
+  function goTo(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function selectMood(btn, val) {
+    document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    state.mood = val;
+    checkMoodReady();
+  }
+
+  function selectOpt(btn, group) {
+    const card = btn.closest('.card');
+    card.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    state[group] = true;
+    if (group === 'concern') checkMoodReady();
+    if (group === 'sleep' || group === 'eat') checkSleepReady();
+    if (group === 'support') checkSupportReady();
+  }
+
+  function checkMoodReady() {
+    const ready = state.mood > 0 && state.concern;
+    document.getElementById('mood-next').disabled = !ready;
+    if (ready) document.getElementById('mood-alert').style.display = 'none';
+  }
+
+  function checkSleepReady() {
+    document.getElementById('sleep-next').disabled = !(state.sleep && state.eat);
+  }
+
+  function checkSupportReady() {
+    document.getElementById('support-next').disabled = !state.support;
+  }
+
+  function submitCheckin() {
+    const m = state.mood || 3;
+    const d = moodData[m];
+    document.getElementById('result-wave').textContent = d.wave;
+    document.getElementById('result-title').textContent = d.title;
+    document.getElementById('result-msg').textContent = d.msg;
+    setTimeout(() => { document.getElementById('mood-bar').style.width = d.score; }, 200);
+    const tc = document.getElementById('tips-container');
+    tc.innerHTML = '';
+    d.tips.forEach(t => {
+      const div = document.createElement('div');
+      div.className = 'tip-card';
+      div.innerHTML = '<h4>💡 Tip</h4><p>' + t + '</p>';
+      tc.appendChild(div);
+    });
+    const emojis = ['😫','😕','😐','🙂','😄'];
+    const labels = ['Terrible','Low','Okay','Good','Great'];
+    document.getElementById('today-entry').textContent = emojis[m-1] + ' ' + labels[m-1];
+    const pct = [30,48,60,74,88];
+    document.getElementById('today-bar').style.height = pct[m-1] + '%';
+    goTo('screen-results');
+  }
+
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+  function clearHistory() {
+    closeModal('modal-clear');
+    document.getElementById('today-entry').textContent = '— No data';
+    document.getElementById('today-bar').style.height = '10%';
+  }
+</script>
+</body>
+</html>
